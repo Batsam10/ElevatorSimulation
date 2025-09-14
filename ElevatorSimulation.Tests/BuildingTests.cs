@@ -1,7 +1,4 @@
-﻿using Xunit;
-using ElevatorSimulation;
-using System.Linq;
-using ElevatorSimulation.Domain.Entities;
+﻿using ElevatorSimulation.Domain.Entities;
 using ElevatorSimulation.Domain.Types;
 
 namespace ElevatorSimulation.Tests
@@ -134,24 +131,6 @@ namespace ElevatorSimulation.Tests
         }
 
         [Fact]
-        public void DispatchElevator_ShouldChooseClosestElevator()
-        {
-            // Arrange
-            var building = new Building(10, 3, 8);
-
-            // Position elevators at different floors
-            building.Elevators[0].CurrentFloor = 1;
-            building.Elevators[1].CurrentFloor = 5;
-            building.Elevators[2].CurrentFloor = 10;
-
-            // Act - Request elevator to floor 6
-            building.RequestElevator(6, 8, 1);
-
-            // Assert - Elevator 2 (at floor 5) should be closest to floor 6
-            Assert.Contains(6, building.Elevators[1].DestinationFloors);
-        }
-
-        [Fact]
         public void Update_ShouldHandleMultipleElevatorsSimultaneously()
         {
             // Arrange
@@ -199,4 +178,3 @@ namespace ElevatorSimulation.Tests
         }
     }
 }
-

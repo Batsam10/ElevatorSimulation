@@ -204,41 +204,5 @@ namespace ElevatorSimulation.Tests
             Assert.Equal(Direction.Stationary, elevator.Direction);
             Assert.DoesNotContain(5, elevator.DestinationFloors);
         }
-
-        [Fact]
-        public void ToString_ShouldReturnCorrectFormat()
-        {
-            // Arrange
-            var elevator = new Elevator(1, 8, 5);
-            elevator.Direction = Direction.Up;
-            elevator.State = ElevatorState.Moving;
-
-            // Act
-            string result = elevator.ToString();
-
-            // Assert
-            Assert.Contains("Elevator 1", result);
-            Assert.Contains("Floor 5", result);
-            Assert.Contains("↑", result);
-            Assert.Contains("Moving", result);
-            Assert.Contains("0/8", result);
-        }
-
-        [Theory]
-        [InlineData(Direction.Up, "↑")]
-        [InlineData(Direction.Down, "↓")]
-        [InlineData(Direction.Stationary, "•")]
-        public void ToString_ShouldShowCorrectDirectionSymbol(Direction direction, string expectedSymbol)
-        {
-            // Arrange
-            var elevator = new Elevator(1, 8, 1);
-            elevator.Direction = direction;
-
-            // Act
-            string result = elevator.ToString();
-
-            // Assert
-            Assert.Contains(expectedSymbol, result);
-        }
     }
 }

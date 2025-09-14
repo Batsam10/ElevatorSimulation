@@ -1,6 +1,5 @@
-﻿using Xunit;
-using ElevatorSimulation;
-using ElevatorSimulation.Domain.Entities;
+﻿using ElevatorSimulation.Domain.Entities;
+using ElevatorSimulation.Domain.Types;
 
 namespace ElevatorSimulation.Tests
 {
@@ -53,4 +52,3 @@ namespace ElevatorSimulation.Tests
 
     }
 }
-
