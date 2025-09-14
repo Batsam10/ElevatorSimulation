@@ -1,4 +1,7 @@
-﻿namespace ElevatorSimulation.Tests
+﻿using ElevatorSimulation.Domain.Entities;
+using ElevatorSimulation.Domain.Types;
+
+namespace ElevatorSimulation.Tests
 {
     public class ElevatorTests
     {

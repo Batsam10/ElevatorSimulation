@@ -1,15 +1,20 @@
-﻿namespace ElevatorSimulation
-{
-    public class Elevator
-    {
-        public int Id { get; set; }
-        public int CurrentFloor { get; set; }
-        public Direction Direction { get; set; }
-        public ElevatorState State { get; set; }
-        public List<Passenger> Passengers { get; set; }
-        public int Capacity { get; set; }
+﻿using ElevatorSimulation.Domain.Interfaces;
+using ElevatorSimulation.Domain.Types;
 
-        public List<int> DestinationFloors { get; set; }
+namespace ElevatorSimulation.Domain.Entities
+{
+    public class Elevator : IElevator
+    {
+        public int Id { get; }
+        public int CurrentFloor { get; private set; }
+        public Direction Direction { get; private set; }
+        public ElevatorState State { get; private set; }
+        public int Capacity { get; }
+        public List<IPassenger> Passengers { get; private set; }
+        public List<int> DestinationFloors { get; private set; }
+
+        IReadOnlyList<IPassenger> IElevator.Passengers => Passengers.AsReadOnly();
+        IReadOnlyList<int> IElevator.DestinationFloors => DestinationFloors.AsReadOnly();
 
         public Elevator(int id, int capacity, int startingFloor = 1)
         {
@@ -18,7 +23,7 @@
             CurrentFloor = startingFloor;
             Direction = Direction.Stationary;
             State = ElevatorState.Stopped;
-            Passengers = new List<Passenger>();
+            Passengers = new List<IPassenger>();
             DestinationFloors = new List<int>();
         }
 
@@ -27,7 +32,7 @@
             return Passengers.Count < Capacity;
         }
 
-        public void AddPassenger(Passenger passenger)
+        public void AddPassenger(IPassenger passenger)
         {
             if (CanAddPassenger())
             {
@@ -42,7 +47,7 @@
             }
         }
 
-        public void RemovePassenger(Passenger passenger)
+        public void RemovePassenger(IPassenger passenger)
         {
             Passengers.Remove(passenger);
             passenger.State = PassengerState.Arrived;
@@ -70,14 +75,12 @@
 
             if (nextFloor == CurrentFloor)
             {
-                // Arrived at destination
                 DestinationFloors.Remove(CurrentFloor);
                 State = ElevatorState.DoorsOpen;
                 Direction = Direction.Stationary;
             }
             else
             {
-                // Move towards destination
                 State = ElevatorState.Moving;
                 if (nextFloor > CurrentFloor)
                 {
@@ -94,22 +97,23 @@
 
         private int GetNextDestination()
         {
-            if (DestinationFloors.Count == 0) return CurrentFloor;
+            if (DestinationFloors.Count == 0)
+                return CurrentFloor;
 
-            // Find the closest floor in the current direction
             if (Direction == Direction.Up || Direction == Direction.Stationary)
             {
                 var upFloors = DestinationFloors.Where(f => f >= CurrentFloor).OrderBy(f => f);
-                if (upFloors.Any()) return upFloors.First();
+                if (upFloors.Any())
+                    return upFloors.First();
             }
 
             if (Direction == Direction.Down || Direction == Direction.Stationary)
             {
                 var downFloors = DestinationFloors.Where(f => f <= CurrentFloor).OrderByDescending(f => f);
-                if (downFloors.Any()) return downFloors.First();
+                if (downFloors.Any())
+                    return downFloors.First();
             }
 
-            // If no floors in current direction, change direction
             return DestinationFloors.OrderBy(f => Math.Abs(f - CurrentFloor)).First();
         }
 

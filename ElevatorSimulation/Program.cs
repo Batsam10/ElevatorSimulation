@@ -1,4 +1,6 @@
-﻿namespace ElevatorSimulation
+﻿using ElevatorSimulation.Application.Services;
+
+namespace ElevatorSimulation
 {
     internal class Program
     {
@@ -31,8 +33,8 @@
                     return;
                 }
 
-                var simulation = new ElevatorSimulation(numberOfFloors, numberOfElevators, capacityPerElevator);
-                simulation.Run();
+                var simulation = new ElevatorSimulationService(numberOfFloors, numberOfElevators, capacityPerElevator);
+                simulation.StartSimulation();
             }
             catch (Exception ex)
             {

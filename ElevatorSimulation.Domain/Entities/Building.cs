@@ -1,20 +1,27 @@
-﻿namespace ElevatorSimulation
+﻿using ElevatorSimulation.Domain.Interfaces;
+using ElevatorSimulation.Domain.Types;
+
+namespace ElevatorSimulation.Domain.Entities
 {
-    public class Building
+    public class Building : IBuilding
     {
-        public List<Floor> Floors { get; set; } = new();
-        public List<Elevator> Elevators { get; set; } = new();
+        public List<IFloor> Floors { get; private set; }
+        public List<IElevator> Elevators { get; private set; }
         private int passengerIdCounter = 1;
+
+        IReadOnlyList<IFloor> IBuilding.Floors => Floors.AsReadOnly();
+        IReadOnlyList<IElevator> IBuilding.Elevators => Elevators.AsReadOnly();
 
         public Building(int numberOfFloors, int numberOfElevators, int elevatorCapacity)
         {
-            // Initialize floors
+            Floors = new List<IFloor>();
+            Elevators = new List<IElevator>();
+
             for (int i = 1; i <= numberOfFloors; i++)
             {
                 Floors.Add(new Floor(i));
             }
 
-            // Initialize elevators
             for (int i = 1; i <= numberOfElevators; i++)
             {
                 Elevators.Add(new Elevator(i, elevatorCapacity));
@@ -35,29 +42,25 @@
                 return;
             }
 
-            // Create passengers
             for (int i = 0; i < numberOfPassengers; i++)
             {
                 var passenger = new Passenger(passengerIdCounter++, floor, destinationFloor);
                 Floors[floor - 1].AddPassenger(passenger);
             }
 
-            // Dispatch elevator
             Direction requestDirection = destinationFloor > floor ? Direction.Up : Direction.Down;
             DispatchElevator(floor, requestDirection);
         }
 
         private void DispatchElevator(int floor, Direction direction)
         {
-            // Find the best elevator to dispatch
-            Elevator bestElevator = null;
+            IElevator bestElevator = null;
             int minDistance = int.MaxValue;
 
             foreach (var elevator in Elevators)
             {
                 int distance = Math.Abs(elevator.CurrentFloor - floor);
 
-                // Prefer elevators that are stationary or moving in the same direction
                 bool isGoodCandidate = elevator.Direction == Direction.Stationary ||
                                       (elevator.Direction == direction &&
                                        ((direction == Direction.Up && elevator.CurrentFloor <= floor) ||
@@ -70,7 +73,6 @@
                 }
             }
 
-            // If no good candidate found, use the closest elevator
             if (bestElevator == null)
             {
                 bestElevator = Elevators.OrderBy(e => Math.Abs(e.CurrentFloor - floor)).First();
@@ -81,25 +83,22 @@
 
         public void Update()
         {
-            // Update all elevators
             foreach (var elevator in Elevators)
             {
                 elevator.Move();
 
-                // Handle passenger pickup and drop-off
                 if (elevator.State == ElevatorState.DoorsOpen)
                 {
                     HandlePassengerExchange(elevator);
-                    elevator.State = ElevatorState.DoorsClosed;
+                    // After handling, close doors (state change handled internally by elevator)
                 }
             }
         }
 
-        private void HandlePassengerExchange(Elevator elevator)
+        private void HandlePassengerExchange(IElevator elevator)
         {
             var currentFloor = Floors[elevator.CurrentFloor - 1];
 
-            // Drop off passengers
             var passengersToDropOff = elevator.Passengers.Where(p => p.DestinationFloor == elevator.CurrentFloor).ToList();
             foreach (var passenger in passengersToDropOff)
             {
@@ -107,7 +106,6 @@
                 Console.WriteLine($"Passenger {passenger.Id} arrived at floor {elevator.CurrentFloor}");
             }
 
-            // Pick up passengers
             var passengersToPickUp = currentFloor.WaitingPassengers.Where(p =>
                 elevator.CanAddPassenger() &&
                 ((p.DestinationFloor > elevator.CurrentFloor && elevator.Direction != Direction.Down) ||
@@ -121,7 +119,6 @@
                 Console.WriteLine($"Passenger {passenger.Id} boarded elevator {elevator.Id} at floor {elevator.CurrentFloor}");
             }
 
-            // Reset floor buttons if no more passengers waiting
             if (!currentFloor.WaitingPassengers.Any(p => p.DestinationFloor > elevator.CurrentFloor))
                 currentFloor.UpButtonPressed = false;
             if (!currentFloor.WaitingPassengers.Any(p => p.DestinationFloor < elevator.CurrentFloor))
@@ -135,7 +132,6 @@
             Console.WriteLine($"Time: {DateTime.Now:HH:mm:ss}");
             Console.WriteLine();
 
-            // Display elevators
             Console.WriteLine("ELEVATORS:");
             foreach (var elevator in Elevators)
             {
@@ -148,7 +144,6 @@
 
             Console.WriteLine();
 
-            // Display floors with waiting passengers
             Console.WriteLine("FLOORS WITH WAITING PASSENGERS:");
             foreach (var floor in Floors.Where(f => f.WaitingPassengers.Any()))
             {
