@@ -1,4 +1,4 @@
-﻿namespace ElevatorSimulation.Domain.Interfaces
+namespace ElevatorSimulation.Domain.Interfaces
 {
     public interface IBuilding
     {

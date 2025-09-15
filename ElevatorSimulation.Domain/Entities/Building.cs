@@ -1,4 +1,4 @@
-﻿using ElevatorSimulation.Domain.Interfaces;
+using ElevatorSimulation.Domain.Interfaces;
 using ElevatorSimulation.Domain.Types;
 
 namespace ElevatorSimulation.Domain.Entities
@@ -60,9 +60,9 @@ namespace ElevatorSimulation.Domain.Entities
             foreach (var elevator in Elevators)
             {
                 int distance = Math.Abs(elevator.CurrentFloor - floor);
-
+                
                 bool isGoodCandidate = elevator.Direction == Direction.Stationary ||
-                                      (elevator.Direction == direction &&
+                                      (elevator.Direction == direction && 
                                        ((direction == Direction.Up && elevator.CurrentFloor <= floor) ||
                                         (direction == Direction.Down && elevator.CurrentFloor >= floor)));
 
@@ -106,8 +106,8 @@ namespace ElevatorSimulation.Domain.Entities
                 Console.WriteLine($"Passenger {passenger.Id} arrived at floor {elevator.CurrentFloor}");
             }
 
-            var passengersToPickUp = currentFloor.WaitingPassengers.Where(p =>
-                elevator.CanAddPassenger() &&
+            var passengersToPickUp = currentFloor.WaitingPassengers.Where(p => 
+                elevator.CanAddPassenger() && 
                 ((p.DestinationFloor > elevator.CurrentFloor && elevator.Direction != Direction.Down) ||
                  (p.DestinationFloor < elevator.CurrentFloor && elevator.Direction != Direction.Up) ||
                  elevator.Direction == Direction.Stationary)).ToList();

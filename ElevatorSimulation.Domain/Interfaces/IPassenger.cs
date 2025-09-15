@@ -1,4 +1,4 @@
-﻿using ElevatorSimulation.Domain.Types;
+using ElevatorSimulation.Domain.Types;
 
 namespace ElevatorSimulation.Domain.Interfaces
 {

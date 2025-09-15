@@ -1,7 +1,12 @@
-﻿namespace ElevatorSimulation.Application.Interfaces
+using ElevatorSimulation.Domain.Interfaces;
+
+using System;
+
+namespace ElevatorSimulation.Application.Interfaces
 {
     public interface IElevatorSimulationService
     {
+        void InitializeSimulation(int floors, int elevators, int capacity);
         void StartSimulation();
         void RequestElevator(int fromFloor, int toFloor, int numberOfPassengers);
         void HandleUserInput(ConsoleKeyInfo key);
@@ -10,3 +15,4 @@
         bool IsRunning { get; }
     }
 }
+

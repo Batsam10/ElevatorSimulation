@@ -1,20 +1,25 @@
-﻿using ElevatorSimulation.Domain.Entities;
-using ElevatorSimulation.Domain.Types;
+using Xunit;
+using System.Linq;
+using ElevatorSimulation.Domain.Entities;
+using ElevatorSimulation.Domain.Interfaces;
 
-namespace ElevatorSimulation.Tests
+namespace ElevatorSimulation.TestsDDD
 {
+    /// <summary>
+    /// Unit tests for the Building class functionality within the DDD structure
+    /// </summary>
     public class BuildingTests
     {
         [Fact]
         public void Constructor_ShouldInitializeBuildingCorrectly()
         {
             // Arrange & Act
-            var building = new Building(10, 3, 8);
+            IBuilding building = new Building(10, 3, 8);
 
             // Assert
             Assert.Equal(10, building.Floors.Count);
             Assert.Equal(3, building.Elevators.Count);
-
+            
             // Check floors are numbered correctly
             for (int i = 0; i < 10; i++)
             {
@@ -34,15 +39,15 @@ namespace ElevatorSimulation.Tests
         public void RequestElevator_ShouldCreatePassengersAndDispatchElevator()
         {
             // Arrange
-            var building = new Building(10, 2, 8);
+            IBuilding building = new Building(10, 2, 8);
 
             // Act
             building.RequestElevator(3, 7, 2);
 
             // Assert
-            var floor3 = building.Floors[2]; // Floor 3 (0-indexed)
+            IFloor floor3 = building.Floors[2]; // Floor 3 (0-indexed)
             Assert.Equal(2, floor3.WaitingPassengers.Count);
-
+            
             // Check passengers are created correctly
             foreach (var passenger in floor3.WaitingPassengers)
             {
@@ -59,7 +64,7 @@ namespace ElevatorSimulation.Tests
         public void RequestElevator_ShouldRejectInvalidFloorNumbers()
         {
             // Arrange
-            var building = new Building(5, 1, 8);
+            IBuilding building = new Building(5, 1, 8);
 
             // Act & Assert - Invalid origin floor
             building.RequestElevator(0, 3, 1);
@@ -75,7 +80,7 @@ namespace ElevatorSimulation.Tests
         public void RequestElevator_ShouldRejectSameOriginAndDestination()
         {
             // Arrange
-            var building = new Building(5, 1, 8);
+            IBuilding building = new Building(5, 1, 8);
 
             // Act
             building.RequestElevator(3, 3, 1);
@@ -88,7 +93,7 @@ namespace ElevatorSimulation.Tests
         public void Update_ShouldMoveElevatorsAndHandlePassengers()
         {
             // Arrange
-            var building = new Building(10, 1, 8);
+            IBuilding building = new Building(10, 1, 8);
             building.RequestElevator(1, 5, 1);
 
             // Act - Multiple updates to simulate elevator movement
@@ -98,11 +103,11 @@ namespace ElevatorSimulation.Tests
             }
 
             // Assert
-            var elevator = building.Elevators.First();
-            var floor1 = building.Floors[0];
-
+            IElevator elevator = building.Elevators.First();
+            IFloor floor1 = building.Floors[0];
+            
             // Either passenger should be picked up or elevator should be moving toward pickup
-            Assert.True(floor1.WaitingPassengers.Count == 0 ||
+            Assert.True(floor1.WaitingPassengers.Count == 0 || 
                        elevator.DestinationFloors.Contains(1) ||
                        elevator.Passengers.Any());
         }
@@ -113,17 +118,17 @@ namespace ElevatorSimulation.Tests
         public void RequestElevator_ShouldSetCorrectDirection(int origin, int destination, Direction expectedDirection)
         {
             // Arrange
-            var building = new Building(10, 1, 8);
+            IBuilding building = new Building(10, 1, 8);
 
             // Act
             building.RequestElevator(origin, destination, 1);
 
             // Assert
-            var passenger = building.Floors[origin - 1].WaitingPassengers.First();
+            IPassenger passenger = building.Floors[origin - 1].WaitingPassengers.First();
             Assert.Equal(destination, passenger.DestinationFloor);
-
+            
             // Check that floor button is pressed correctly
-            var floor = building.Floors[origin - 1];
+            IFloor floor = building.Floors[origin - 1];
             if (expectedDirection == Direction.Up)
                 Assert.True(floor.UpButtonPressed);
             else
@@ -131,11 +136,40 @@ namespace ElevatorSimulation.Tests
         }
 
         [Fact]
+        public void DispatchElevator_ShouldChooseClosestElevator()
+        {
+            // Arrange
+            Building building = new Building(10, 3, 8);
+            
+            // Position elevators at different floors using GoToFloor and Update
+            building.Elevators[0].GoToFloor(1);
+            building.Elevators[1].GoToFloor(5);
+            building.Elevators[2].GoToFloor(10);
+
+            // Simulate movement until elevators reach their initial positions
+            for (int i = 0; i < 10; i++)
+            {
+                building.Update();
+            }
+
+            // Ensure elevators are at their intended starting floors for the test
+            Assert.Equal(1, building.Elevators[0].CurrentFloor);
+            Assert.Equal(5, building.Elevators[1].CurrentFloor);
+            Assert.Equal(10, building.Elevators[2].CurrentFloor);
+
+            // Act - Request elevator to floor 6
+            building.RequestElevator(6, 8, 1);
+
+            // Assert - Elevator 2 (at floor 5) should be closest to floor 6
+            Assert.Contains(6, building.Elevators[1].DestinationFloors);
+        }
+
+        [Fact]
         public void Update_ShouldHandleMultipleElevatorsSimultaneously()
         {
             // Arrange
-            var building = new Building(10, 3, 8);
-
+            IBuilding building = new Building(10, 3, 8);
+            
             // Create requests for different elevators
             building.RequestElevator(1, 5, 1);
             building.RequestElevator(3, 8, 1);
@@ -148,9 +182,9 @@ namespace ElevatorSimulation.Tests
             }
 
             // Assert - At least one elevator should have destinations or be active
-            Assert.True(building.Elevators.Any(e =>
-                e.DestinationFloors.Any() ||
-                e.Passengers.Any() ||
+            Assert.True(building.Elevators.Any(e => 
+                e.DestinationFloors.Any() || 
+                e.Passengers.Any() || 
                 e.Direction != Direction.Stationary));
         }
 
@@ -158,7 +192,7 @@ namespace ElevatorSimulation.Tests
         public void Building_ShouldHandleCapacityLimits()
         {
             // Arrange
-            var building = new Building(5, 1, 2); // Small capacity elevator
+            IBuilding building = new Building(5, 1, 2); // Small capacity elevator
 
             // Act - Request more passengers than capacity
             building.RequestElevator(1, 3, 5);
@@ -170,11 +204,12 @@ namespace ElevatorSimulation.Tests
             }
 
             // Assert - Some passengers should still be waiting
-            var elevator = building.Elevators.First();
-            var floor1 = building.Floors[0];
-
+            IElevator elevator = building.Elevators.First();
+            IFloor floor1 = building.Floors[0];
+            
             Assert.True(elevator.Passengers.Count <= 2); // Capacity limit
             Assert.True(floor1.WaitingPassengers.Count + elevator.Passengers.Count <= 5); // Total passengers
         }
     }
 }
+

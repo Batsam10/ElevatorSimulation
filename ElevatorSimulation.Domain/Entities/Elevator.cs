@@ -1,4 +1,4 @@
-﻿using ElevatorSimulation.Domain.Interfaces;
+using ElevatorSimulation.Domain.Interfaces;
 using ElevatorSimulation.Domain.Types;
 
 namespace ElevatorSimulation.Domain.Entities
@@ -38,7 +38,7 @@ namespace ElevatorSimulation.Domain.Entities
             {
                 Passengers.Add(passenger);
                 passenger.State = PassengerState.InElevator;
-
+                
                 if (!DestinationFloors.Contains(passenger.DestinationFloor))
                 {
                     DestinationFloors.Add(passenger.DestinationFloor);
@@ -72,7 +72,7 @@ namespace ElevatorSimulation.Domain.Entities
             }
 
             int nextFloor = GetNextDestination();
-
+            
             if (nextFloor == CurrentFloor)
             {
                 DestinationFloors.Remove(CurrentFloor);
@@ -106,7 +106,7 @@ namespace ElevatorSimulation.Domain.Entities
                 if (upFloors.Any())
                     return upFloors.First();
             }
-
+            
             if (Direction == Direction.Down || Direction == Direction.Stationary)
             {
                 var downFloors = DestinationFloors.Where(f => f <= CurrentFloor).OrderByDescending(f => f);

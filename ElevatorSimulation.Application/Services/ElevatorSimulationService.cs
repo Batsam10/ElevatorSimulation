@@ -1,4 +1,4 @@
-﻿using ElevatorSimulation.Application.Interfaces;
+using ElevatorSimulation.Application.Interfaces;
 using ElevatorSimulation.Domain.Entities;
 using ElevatorSimulation.Domain.Interfaces;
 
@@ -11,9 +11,14 @@ namespace ElevatorSimulation.Application.Services
 
         public bool IsRunning => _isRunning;
 
-        public ElevatorSimulationService(int floors, int elevators, int capacity)
+        public ElevatorSimulationService()
         {
-            _building = new Building(floors, elevators, capacity);//Maybe having a DI container would be better for scalability
+            _isRunning = false;
+        }
+
+        public void InitializeSimulation(int floors, int elevators, int capacity)
+        {
+            _building = new Building(floors, elevators, capacity);
             _isRunning = true;
         }
 
@@ -32,15 +37,13 @@ namespace ElevatorSimulation.Application.Services
             {
                 DisplaySimulationStatus();
 
-                if (Console.KeyAvailable)
-                {
-                    var key = Console.ReadKey(true);
-                    HandleUserInput(key);
-                }
-
                 UpdateSimulation();
 
-                Thread.Sleep(1000);
+                // Wait for user input to advance simulation step
+                Console.WriteLine("Press [Enter] to advance, [R] to request elevator, [Q] to quit...");
+                ConsoleKeyInfo key = Console.ReadKey(true);
+                HandleUserInput(key);
+
             }
         }
 
