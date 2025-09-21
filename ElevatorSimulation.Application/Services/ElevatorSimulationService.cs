@@ -117,7 +117,7 @@ namespace ElevatorSimulation.Application.Services
 
         public void DisplaySimulationStatus()
         {
-            Console.Clear();
+            //Console.Clear();
             _logger.LogInformation("=== ELEVATOR SYSTEM STATUS ===");
             _logger.LogInformation($"Time: {DateTime.Now:HH:mm:ss}");
             _logger.LogInformation("");
