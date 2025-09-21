@@ -1,22 +1,17 @@
-using ElevatorSimulation.Domain.Interfaces;
 using ElevatorSimulation.Domain.Types;
-using System.Drawing;
 
 namespace ElevatorSimulation.Domain.Entities
 {
-    public class Building : IBuilding
+    public class Building
     {
-        public List<IFloor> Floors { get; private set; }
-        public List<IElevator> Elevators { get; private set; }
+        public List<Floor> Floors { get; private set; }
+        public List<Elevator> Elevators { get; private set; }
         private int passengerIdCounter = 1;
-
-        IReadOnlyList<IFloor> IBuilding.Floors => Floors.AsReadOnly();
-        IReadOnlyList<IElevator> IBuilding.Elevators => Elevators.AsReadOnly();
 
         private Building(int numberOfFloors, int numberOfElevators, int elevatorCapacity)
         {
-            Floors = new List<IFloor>();
-            Elevators = new List<IElevator>();
+            Floors = new List<Floor>();
+            Elevators = new List<Elevator>();
 
             for (int i = 1; i <= numberOfFloors; i++)
             {
@@ -39,23 +34,17 @@ namespace ElevatorSimulation.Domain.Entities
             return new Building(numberOfFloors, numberOfElevators, elevatorCapacity);
         }
 
-        public void RequestElevator(int floor, int destinationFloor, int numberOfPassengers = 1)
+        public (bool IsSuccess, string ErrorMessage) RequestElevator(int floor, int destinationFloor, int numberOfPassengers = 1)
         {
-            //ArgumentOutOfRangeException.ThrowIfGreaterThan(floor, Floors.Count);
-            //ArgumentOutOfRangeException.ThrowIfLessThan(floor, 1);
-            //ArgumentOutOfRangeException.ThrowIfGreaterThan(destinationFloor, Floors.Count);
-            //ArgumentOutOfRangeException.ThrowIfLessThan(destinationFloor, 1);
             if (floor < 1 || floor > Floors.Count || destinationFloor < 1 || destinationFloor > Floors.Count)
             {
 
-                Console.WriteLine("Invalid floor number!");
-                return;
+                return (false, "Invalid floor number!");
             }
 
             if (floor == destinationFloor)
             {
-                Console.WriteLine("Origin and destination floors cannot be the same!");
-                return;
+                return (false, "Origin and destination floors cannot be the same!");
             }
 
             for (int i = 0; i < numberOfPassengers; i++)
@@ -66,6 +55,7 @@ namespace ElevatorSimulation.Domain.Entities
 
             Direction requestDirection = destinationFloor > floor ? Direction.Up : Direction.Down;
             DispatchElevator(floor, requestDirection);
+            return (true, string.Empty);
         }
 
         ///<summary>
@@ -74,7 +64,7 @@ namespace ElevatorSimulation.Domain.Entities
         ///</summary>
         private void DispatchElevator(int floor, Direction direction)
         {
-            IElevator bestElevator = null;
+            Elevator bestElevator = null;
             int minDistance = int.MaxValue;
 
             foreach (var elevator in Elevators)
@@ -106,32 +96,40 @@ namespace ElevatorSimulation.Domain.Entities
             bestElevator.GoToFloor(floor);
         }
 
-        public void Update()
+        public (List<(Passenger, Elevator)> Arrived, List<(Passenger, Elevator)> Boarded) Update()
         {
+            var arrived = new List<(Passenger, Elevator)>();
+            var boarded = new List<(Passenger, Elevator)>();
+
             foreach (var elevator in Elevators)
             {
                 elevator.Move();
 
                 if (elevator.State == ElevatorState.DoorsOpen)
                 {
-
-                    HandlePassengerExchange(elevator);
+                    var details = HandlePassengerExchange(elevator);
+                    arrived.AddRange(details.Arrived);
+                    boarded.AddRange(details.Boarded);
                 }
             }
+
+            return (arrived, boarded);
         }
 
         /// <summary>
         /// Handles passenger exchange (boarding and alighting) when the elevator doors are open.
         /// </summary>
-        private void HandlePassengerExchange(IElevator elevator)
+        private (List<(Passenger, Elevator)> Arrived, List<(Passenger, Elevator)> Boarded) HandlePassengerExchange(Elevator elevator)
         {
             var currentFloor = Floors[elevator.CurrentFloor - 1];
+            var arrived = new List<(Passenger, Elevator)>();
+            var boarded = new List<(Passenger, Elevator)>();
 
             var passengersToDropOff = elevator.Passengers.Where(p => p.DestinationFloor == elevator.CurrentFloor).ToList();
             foreach (var passenger in passengersToDropOff)
             {
                 elevator.RemovePassenger(passenger);
-                Console.WriteLine($"Passenger {passenger.Id} arrived at floor {elevator.CurrentFloor}");
+                arrived.Add((passenger, elevator));
             }
 
             var passengersToPickUp = currentFloor.WaitingPassengers.Where(p =>
@@ -148,7 +146,7 @@ namespace ElevatorSimulation.Domain.Entities
                 }
                 elevator.AddPassenger(passenger);
                 currentFloor.RemovePassenger(passenger);
-                Console.WriteLine($"Passenger {passenger.Id} boarded elevator {elevator.Id} at floor {elevator.CurrentFloor}");
+                boarded.Add((passenger, elevator));
             }
 
             // After pickup, if there are still waiting passengers, dispatch another elevator
@@ -169,39 +167,8 @@ namespace ElevatorSimulation.Domain.Entities
                 currentFloor.UpButtonPressed = false;
             if (!currentFloor.WaitingPassengers.Any(p => p.DestinationFloor < elevator.CurrentFloor))
                 currentFloor.DownButtonPressed = false;
-        }
 
-        public void DisplayStatus()
-        {
-            Console.Clear();
-            Console.WriteLine("=== ELEVATOR SYSTEM STATUS ===");
-            Console.WriteLine($"Time: {DateTime.Now:HH:mm:ss}");
-            Console.WriteLine();
-
-            Console.WriteLine("ELEVATORS:");
-            foreach (var elevator in Elevators)
-            {
-                Console.WriteLine($"  {elevator}");
-                if (elevator.DestinationFloors.Any())
-                {
-                    Console.WriteLine($"    Destinations: [{string.Join(", ", elevator.DestinationFloors)}]");
-                }
-            }
-
-            Console.WriteLine();
-
-            Console.WriteLine("FLOORS WITH WAITING PASSENGERS:");
-            foreach (var floor in Floors.Where(f => f.WaitingPassengers.Any()))
-            {
-                Console.WriteLine($"  Floor {floor.FloorNumber}: {floor.WaitingPassengers.Count} waiting");
-                foreach (var passenger in floor.WaitingPassengers)
-                {
-                    Console.WriteLine($"    {passenger}");
-                }
-            }
-
-            Console.WriteLine();
-            Console.WriteLine("Commands: [R]equest elevator, [Q]uit, [Enter] to continue simulation");
+            return (arrived, boarded);
         }
     }
 }

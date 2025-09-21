@@ -1,9 +1,8 @@
-using ElevatorSimulation.Domain.Interfaces;
 using ElevatorSimulation.Domain.Types;
 
 namespace ElevatorSimulation.Domain.Entities
 {
-    public class Passenger : IPassenger
+    public class Passenger
     {
         public int Id { get; }
         public int OriginFloor { get; }
@@ -23,8 +22,9 @@ namespace ElevatorSimulation.Domain.Entities
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(id);
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(originFloor);
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(destinationFloor);
+
             return new Passenger(id, originFloor, destinationFloor);
-        }   
+        }
 
         public override string ToString()
         {

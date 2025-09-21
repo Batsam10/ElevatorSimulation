@@ -1,20 +1,16 @@
-using ElevatorSimulation.Domain.Interfaces;
 using ElevatorSimulation.Domain.Types;
 
 namespace ElevatorSimulation.Domain.Entities
 {
-    public class Elevator : IElevator
+    public class Elevator
     {
         public int Id { get; }
         public int CurrentFloor { get; private set; }
         public Direction Direction { get; private set; }
         public ElevatorState State { get; private set; }
         public int Capacity { get; }
-        public List<IPassenger> Passengers { get; private set; }
+        public List<Passenger> Passengers { get; private set; }
         public List<int> DestinationFloors { get; private set; }
-
-        IReadOnlyList<IPassenger> IElevator.Passengers => Passengers.AsReadOnly();
-        IReadOnlyList<int> IElevator.DestinationFloors => DestinationFloors.AsReadOnly();
 
         private Elevator(int id, int capacity, int startingFloor)
         {
@@ -23,7 +19,7 @@ namespace ElevatorSimulation.Domain.Entities
             CurrentFloor = startingFloor;
             Direction = Direction.Stationary;
             State = ElevatorState.Stopped;
-            Passengers = new List<IPassenger>();
+            Passengers = new List<Passenger>();
             DestinationFloors = new List<int>();
         }
 
@@ -42,7 +38,7 @@ namespace ElevatorSimulation.Domain.Entities
             return Passengers.Count < Capacity;
         }
 
-        public void AddPassenger(IPassenger passenger)
+        public void AddPassenger(Passenger passenger)
         {
             if (CanAddPassenger())
             {
@@ -57,7 +53,7 @@ namespace ElevatorSimulation.Domain.Entities
             }
         }
 
-        public void RemovePassenger(IPassenger passenger)
+        public void RemovePassenger(Passenger passenger)
         {
             Passengers.Remove(passenger);
             passenger.State = PassengerState.Arrived;

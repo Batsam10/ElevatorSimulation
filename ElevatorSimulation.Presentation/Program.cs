@@ -1,6 +1,8 @@
-using System;
 using ElevatorSimulation.Application.Interfaces;
 using ElevatorSimulation.Application.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Serilog;
 
 namespace ElevatorSimulation.Presentation
 {
@@ -10,9 +12,23 @@ namespace ElevatorSimulation.Presentation
         {
             try
             {
-                // Setup Dependency Injection (simple for console app)
-                IElevatorSimulationService simulationService = new ElevatorSimulationService();
-                
+                var host = Host.CreateDefaultBuilder(args)
+                     .ConfigureServices(services =>
+                     {
+                         services.AddScoped<IElevatorSimulationService, ElevatorSimulationService>();
+
+                     })
+                     .UseSerilog((hostingContext, services, loggerConfiguration) =>
+                     {
+                         loggerConfiguration
+                             .MinimumLevel.Information()
+                             .WriteTo.Console()
+                             .WriteTo.File("log.txt", rollingInterval: RollingInterval.Day);
+                     })
+                     .Build();
+
+                var simulationService = host.Services.GetRequiredService<IElevatorSimulationService>();
+
                 // Initialize and run simulation
                 // Building with 10 floors, 3 elevators, capacity of 8 passengers each
                 simulationService.InitializeSimulation(10, 3, 8);

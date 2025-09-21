@@ -1,7 +1,3 @@
-using ElevatorSimulation.Domain.Interfaces;
-
-using System;
-
 namespace ElevatorSimulation.Application.Interfaces
 {
     public interface IElevatorSimulationService

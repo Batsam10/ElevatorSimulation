@@ -1,21 +1,18 @@
-using ElevatorSimulation.Domain.Interfaces;
 using ElevatorSimulation.Domain.Types;
 
 namespace ElevatorSimulation.Domain.Entities
 {
-    public class Floor : IFloor
+    public class Floor
     {
         public int FloorNumber { get; }
-        public List<IPassenger> WaitingPassengers { get; private set; }
+        public List<Passenger> WaitingPassengers { get; private set; }
         public bool UpButtonPressed { get; set; }
         public bool DownButtonPressed { get; set; }
-
-        IReadOnlyList<IPassenger> IFloor.WaitingPassengers => WaitingPassengers.AsReadOnly();
 
         Floor(int floorNumber)
         {
             FloorNumber = floorNumber;
-            WaitingPassengers = new List<IPassenger>();
+            WaitingPassengers = new List<Passenger>();
             UpButtonPressed = false;
             DownButtonPressed = false;
         }
@@ -24,7 +21,7 @@ namespace ElevatorSimulation.Domain.Entities
         {
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(floorNumber);
             return new Floor(floorNumber);
-        }   
+        }
 
         public void CallElevator(Direction direction)
         {
@@ -34,7 +31,7 @@ namespace ElevatorSimulation.Domain.Entities
                 DownButtonPressed = true;
         }
 
-        public void AddPassenger(IPassenger passenger)
+        public void AddPassenger(Passenger passenger)
         {
             WaitingPassengers.Add(passenger);
             // Automatically press the appropriate button
@@ -44,7 +41,7 @@ namespace ElevatorSimulation.Domain.Entities
                 CallElevator(Direction.Down);
         }
 
-        public void RemovePassenger(IPassenger passenger)
+        public void RemovePassenger(Passenger passenger)
         {
             WaitingPassengers.Remove(passenger);
         }

@@ -1,5 +1,4 @@
 ﻿using ElevatorSimulation.Domain.Entities;
-using ElevatorSimulation.Domain.Interfaces;
 using ElevatorSimulation.Domain.Types;
 
 namespace ElevatorSimulation.Tests
@@ -10,7 +9,7 @@ namespace ElevatorSimulation.Tests
         public void Floor_Constructor_ShouldInitializeCorrectly()
         {
             // Arrange & Act
-            IFloor floor = Floor.CreateFloor(5);
+            var floor = Floor.CreateFloor(5);
 
             // Assert
             Assert.Equal(5, floor.FloorNumber);
@@ -23,7 +22,7 @@ namespace ElevatorSimulation.Tests
         public void Floor_CallElevator_ShouldSetUpButton()
         {
             // Arrange
-            IFloor floor = Floor.CreateFloor(3);
+            var floor = Floor.CreateFloor(3);
 
             // Act
             floor.CallElevator(Direction.Up);
@@ -37,7 +36,7 @@ namespace ElevatorSimulation.Tests
         public void Floor_CallElevator_ShouldSetDownButton()
         {
             // Arrange
-            IFloor floor = Floor.CreateFloor(3);
+            var floor = Floor.CreateFloor(3);
 
             // Act
             floor.CallElevator(Direction.Down);
@@ -51,7 +50,7 @@ namespace ElevatorSimulation.Tests
         public void Floor_CallElevator_ShouldIgnoreStationary()
         {
             // Arrange
-            IFloor floor = Floor.CreateFloor(3);
+            var floor = Floor.CreateFloor(3);
 
             // Act
             floor.CallElevator(Direction.Stationary);
@@ -65,8 +64,8 @@ namespace ElevatorSimulation.Tests
         public void Floor_AddPassenger_ShouldAddToWaitingList()
         {
             // Arrange
-            IFloor floor = Floor.CreateFloor(3);
-            IPassenger passenger = Passenger.CreatePassenger(1, 3, 7);
+            var floor = Floor.CreateFloor(3);
+            var passenger = Passenger.CreatePassenger(1, 3, 7);
 
             // Act
             floor.AddPassenger(passenger);
@@ -80,8 +79,8 @@ namespace ElevatorSimulation.Tests
         public void Floor_AddPassenger_ShouldCallElevatorUp_WhenDestinationAbove()
         {
             // Arrange
-            IFloor floor = Floor.CreateFloor(3);
-            IPassenger passenger = Passenger.CreatePassenger(1, 3, 7); // Going up
+            var floor = Floor.CreateFloor(3);
+            var passenger = Passenger.CreatePassenger(1, 3, 7); // Going up
 
             // Act
             floor.AddPassenger(passenger);
@@ -95,8 +94,8 @@ namespace ElevatorSimulation.Tests
         public void Floor_AddPassenger_ShouldCallElevatorDown_WhenDestinationBelow()
         {
             // Arrange
-            IFloor floor = Floor.CreateFloor(5);
-            IPassenger passenger = Passenger.CreatePassenger(1, 5, 2); // Going down
+            var floor = Floor.CreateFloor(5);
+            var passenger = Passenger.CreatePassenger(1, 5, 2); // Going down
 
             // Act
             floor.AddPassenger(passenger);
@@ -110,8 +109,8 @@ namespace ElevatorSimulation.Tests
         public void Floor_AddPassenger_ShouldNotCallElevator_WhenSameFloor()
         {
             // Arrange
-            IFloor floor = Floor.CreateFloor(3);
-            IPassenger passenger = Passenger.CreatePassenger(1, 3, 3); // Same floor (shouldn't happen in practice)
+            var floor = Floor.CreateFloor(3);
+            var passenger = Passenger.CreatePassenger(1, 3, 3); // Same floor (shouldn't happen in practice)
 
             // Act
             floor.AddPassenger(passenger);
@@ -125,9 +124,9 @@ namespace ElevatorSimulation.Tests
         public void Floor_RemovePassenger_ShouldRemoveFromWaitingList()
         {
             // Arrange
-            IFloor floor = Floor.CreateFloor(3);
-            IPassenger passenger1 = Passenger.CreatePassenger(1, 3, 7);
-            IPassenger passenger2 = Passenger.CreatePassenger(2, 3, 8);
+            var floor = Floor.CreateFloor(3);
+            var passenger1 = Passenger.CreatePassenger(1, 3, 7);
+            var passenger2 = Passenger.CreatePassenger(2, 3, 8);
 
             floor.AddPassenger(passenger1);
             floor.AddPassenger(passenger2);
@@ -145,12 +144,12 @@ namespace ElevatorSimulation.Tests
         public void Floor_AddMultiplePassengers_ShouldMaintainCorrectCount()
         {
             // Arrange
-            IFloor floor = Floor.CreateFloor(1);
+            var floor = Floor.CreateFloor(1);
 
             // Act
             for (int i = 1; i <= 5; i++)
             {
-                IPassenger passenger = Passenger.CreatePassenger(i, 1, 10);
+                var passenger = Passenger.CreatePassenger(i, 1, 10);
                 floor.AddPassenger(passenger);
             }
 
@@ -163,9 +162,9 @@ namespace ElevatorSimulation.Tests
         public void Floor_MixedDirectionPassengers_ShouldSetBothButtons()
         {
             // Arrange
-            IFloor floor = Floor.CreateFloor(5);
-            IPassenger passengerUp = Passenger.CreatePassenger(1, 5, 8);
-            IPassenger passengerDown = Passenger.CreatePassenger(2, 5, 2);
+            var floor = Floor.CreateFloor(5);
+            var passengerUp = Passenger.CreatePassenger(1, 5, 8);
+            var passengerDown = Passenger.CreatePassenger(2, 5, 2);
 
             // Act
             floor.AddPassenger(passengerUp);
