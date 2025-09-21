@@ -17,11 +17,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ElevatorSimulation\ElevatorSimulation.csproj" />
+    <Using Include="Xunit" />
   </ItemGroup>
 
   <ItemGroup>
-    <Using Include="Xunit" />
+    <ProjectReference Include="..\ElevatorSimulation.Domain\ElevatorSimulation.Domain.csproj" />
+    <ProjectReference Include="..\ElevatorSimulation.Application\ElevatorSimulation.Application.csproj" />
   </ItemGroup>
 
 </Project>

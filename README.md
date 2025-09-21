@@ -35,6 +35,7 @@ transportation efficiently.
      - Enter number of passengers (1-8)
    - **[Q]**: Quit the simulation
    - **[Enter]**: Continue simulation without input
+   - **[C]**: Auto-simulation without requiring [Enter] key presses
 
 3. **Real-Time Display**
    - Elevator status showing current floor, direction, state, and passenger count
@@ -42,3 +43,5 @@ transportation efficiently.
    - Waiting passengers on each floor
    - Real-time updates every second
 
+3. **Logging**
+    - Logging to a file called 'log'

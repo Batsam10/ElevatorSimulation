@@ -1,12 +1,18 @@
-﻿namespace ElevatorSimulation.Tests
+using ElevatorSimulation.Domain.Entities;
+using ElevatorSimulation.Domain.Types;
+
+namespace ElevatorSimulation.Tests
 {
+    /// <summary>
+    /// Unit tests for the Elevator class functionality within the DDD structure
+    /// </summary>
     public class ElevatorTests
     {
         [Fact]
         public void Constructor_ShouldInitializeElevatorCorrectly()
         {
             // Arrange & Act
-            var elevator = new Elevator(1, 8, 5);
+            var elevator = Elevator.CreateElevator(1, 8, 5);
 
             // Assert
             Assert.Equal(1, elevator.Id);
@@ -22,7 +28,7 @@
         public void Constructor_ShouldUseDefaultStartingFloor()
         {
             // Arrange & Act
-            var elevator = new Elevator(1, 8);
+            var elevator = Elevator.CreateElevator(1, 8);
 
             // Assert
             Assert.Equal(1, elevator.CurrentFloor);
@@ -32,8 +38,8 @@
         public void CanAddPassenger_ShouldReturnTrue_WhenElevatorNotFull()
         {
             // Arrange
-            var elevator = new Elevator(1, 2);
-            var passenger = new Passenger(1, 1, 5);
+            var elevator = Elevator.CreateElevator(1, 2);
+            var passenger = Passenger.CreatePassenger(1, 1, 5);
 
             // Act
             elevator.AddPassenger(passenger);
@@ -47,8 +53,8 @@
         public void CanAddPassenger_ShouldReturnFalse_WhenElevatorFull()
         {
             // Arrange
-            var elevator = new Elevator(1, 1);
-            var passenger = new Passenger(1, 1, 5);
+            var elevator = Elevator.CreateElevator(1, 1);
+            var passenger = Passenger.CreatePassenger(1, 1, 5);
 
             // Act
             elevator.AddPassenger(passenger);
@@ -62,8 +68,8 @@
         public void AddPassenger_ShouldAddPassengerAndDestination()
         {
             // Arrange
-            var elevator = new Elevator(1, 8, 1);
-            var passenger = new Passenger(1, 1, 5);
+            var elevator = Elevator.CreateElevator(1, 8, 1);
+            var passenger = Passenger.CreatePassenger(1, 1, 5);
 
             // Act
             elevator.AddPassenger(passenger);
@@ -79,9 +85,9 @@
         public void AddPassenger_ShouldNotAddWhenFull()
         {
             // Arrange
-            var elevator = new Elevator(1, 1, 1);
-            var passenger1 = new Passenger(1, 1, 5);
-            var passenger2 = new Passenger(2, 1, 6);
+            var elevator = Elevator.CreateElevator(1, 1, 1);
+            var passenger1 = Passenger.CreatePassenger(1, 1, 5);
+            var passenger2 = Passenger.CreatePassenger(2, 1, 6);
 
             // Act
             elevator.AddPassenger(passenger1);
@@ -97,8 +103,8 @@
         public void RemovePassenger_ShouldRemovePassengerAndUpdateState()
         {
             // Arrange
-            var elevator = new Elevator(1, 8, 1);
-            var passenger = new Passenger(1, 1, 5);
+            var elevator = Elevator.CreateElevator(1, 8, 1);
+            var passenger = Passenger.CreatePassenger(1, 1, 5);
             elevator.AddPassenger(passenger);
 
             // Act
@@ -113,7 +119,7 @@
         public void GoToFloor_ShouldAddDestinationFloor()
         {
             // Arrange
-            var elevator = new Elevator(1, 8, 1);
+            var elevator = Elevator.CreateElevator(1, 8, 1);
 
             // Act
             elevator.GoToFloor(5);
@@ -126,7 +132,7 @@
         public void GoToFloor_ShouldNotAddDuplicateDestination()
         {
             // Arrange
-            var elevator = new Elevator(1, 8, 1);
+            var elevator = Elevator.CreateElevator(1, 8, 1);
 
             // Act
             elevator.GoToFloor(5);
@@ -141,7 +147,7 @@
         public void Move_ShouldStayStationary_WhenNoDestinations()
         {
             // Arrange
-            var elevator = new Elevator(1, 8, 5);
+            var elevator = Elevator.CreateElevator(1, 8, 5);
 
             // Act
             elevator.Move();
@@ -156,7 +162,7 @@
         public void Move_ShouldMoveUp_WhenDestinationAbove()
         {
             // Arrange
-            var elevator = new Elevator(1, 8, 1);
+            var elevator = Elevator.CreateElevator(1, 8, 1);
             elevator.GoToFloor(5);
 
             // Act
@@ -172,7 +178,7 @@
         public void Move_ShouldMoveDown_WhenDestinationBelow()
         {
             // Arrange
-            var elevator = new Elevator(1, 8, 5);
+            var elevator = Elevator.CreateElevator(1, 8, 5);
             elevator.GoToFloor(1);
 
             // Act
@@ -188,7 +194,7 @@
         public void Move_ShouldOpenDoors_WhenReachingDestination()
         {
             // Arrange
-            var elevator = new Elevator(1, 8, 4);
+            var elevator = Elevator.CreateElevator(1, 8, 4);
             elevator.GoToFloor(5);
             elevator.Move(); // Move to floor 5
 
@@ -206,16 +212,17 @@
         public void ToString_ShouldReturnCorrectFormat()
         {
             // Arrange
-            var elevator = new Elevator(1, 8, 5);
-            elevator.Direction = Direction.Up;
-            elevator.State = ElevatorState.Moving;
+            var elevator = Elevator.CreateElevator(1, 8, 5);
+            // To test ToString, we need to simulate movement that changes state and direction
+            elevator.GoToFloor(elevator.CurrentFloor + 1);
+            elevator.Move(); // This will set Direction to Up and State to Moving
 
             // Act
             string result = elevator.ToString();
 
             // Assert
             Assert.Contains("Elevator 1", result);
-            Assert.Contains("Floor 5", result);
+            Assert.Contains("Floor 6", result);
             Assert.Contains("↑", result);
             Assert.Contains("Moving", result);
             Assert.Contains("0/8", result);
@@ -228,8 +235,21 @@
         public void ToString_ShouldShowCorrectDirectionSymbol(Direction direction, string expectedSymbol)
         {
             // Arrange
-            var elevator = new Elevator(1, 8, 1);
-            elevator.Direction = direction;
+            var elevator = Elevator.CreateElevator(1, 8, 1);
+            // To test ToString, we need to ensure the elevator is in a state that reflects the direction.
+            // For this specific test, we'll create an elevator and make it move to induce the direction.
+            // This is a bit more involved than directly setting, but adheres to the read-only property.
+            if (direction == Direction.Up)
+            {
+                elevator.GoToFloor(elevator.CurrentFloor + 1);
+                elevator.Move(); // Should set direction to Up
+            }
+            else if (direction == Direction.Down)
+            {
+                elevator.GoToFloor(elevator.CurrentFloor - 1);
+                elevator.Move(); // Should set direction to Down
+            }
+            // If Stationary, it should already be stationary by default or after reaching a destination.
 
             // Act
             string result = elevator.ToString();
@@ -239,3 +259,4 @@
         }
     }
 }
+

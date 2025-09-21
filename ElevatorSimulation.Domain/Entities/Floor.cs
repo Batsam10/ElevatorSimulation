@@ -1,18 +1,26 @@
-﻿namespace ElevatorSimulation
+using ElevatorSimulation.Domain.Types;
+
+namespace ElevatorSimulation.Domain.Entities
 {
     public class Floor
     {
-        public int FloorNumber { get; set; }
-        public List<Passenger> WaitingPassengers { get; set; }
+        public int FloorNumber { get; }
+        public List<Passenger> WaitingPassengers { get; private set; }
         public bool UpButtonPressed { get; set; }
         public bool DownButtonPressed { get; set; }
 
-        public Floor(int floorNumber)
+        Floor(int floorNumber)
         {
             FloorNumber = floorNumber;
             WaitingPassengers = new List<Passenger>();
             UpButtonPressed = false;
             DownButtonPressed = false;
+        }
+
+        public static Floor CreateFloor(int floorNumber)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(floorNumber);
+            return new Floor(floorNumber);
         }
 
         public void CallElevator(Direction direction)
