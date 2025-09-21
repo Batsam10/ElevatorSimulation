@@ -16,7 +16,7 @@ namespace ElevatorSimulation.Domain.Entities
         IReadOnlyList<IPassenger> IElevator.Passengers => Passengers.AsReadOnly();
         IReadOnlyList<int> IElevator.DestinationFloors => DestinationFloors.AsReadOnly();
 
-        public Elevator(int id, int capacity, int startingFloor = 1)
+        private Elevator(int id, int capacity, int startingFloor)
         {
             Id = id;
             Capacity = capacity;
@@ -25,6 +25,16 @@ namespace ElevatorSimulation.Domain.Entities
             State = ElevatorState.Stopped;
             Passengers = new List<IPassenger>();
             DestinationFloors = new List<int>();
+        }
+
+
+        public static Elevator CreateElevator(int id, int capacity, int startingFloor = 1)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(id);
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(capacity);
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(startingFloor);
+
+            return new Elevator(id, capacity, startingFloor);
         }
 
         public bool CanAddPassenger()
@@ -38,7 +48,7 @@ namespace ElevatorSimulation.Domain.Entities
             {
                 Passengers.Add(passenger);
                 passenger.State = PassengerState.InElevator;
-                
+
                 if (!DestinationFloors.Contains(passenger.DestinationFloor))
                 {
                     DestinationFloors.Add(passenger.DestinationFloor);
@@ -72,7 +82,7 @@ namespace ElevatorSimulation.Domain.Entities
             }
 
             int nextFloor = GetNextDestination();
-            
+
             if (nextFloor == CurrentFloor)
             {
                 DestinationFloors.Remove(CurrentFloor);
@@ -106,7 +116,7 @@ namespace ElevatorSimulation.Domain.Entities
                 if (upFloors.Any())
                     return upFloors.First();
             }
-            
+
             if (Direction == Direction.Down || Direction == Direction.Stationary)
             {
                 var downFloors = DestinationFloors.Where(f => f <= CurrentFloor).OrderByDescending(f => f);

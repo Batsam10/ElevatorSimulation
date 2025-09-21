@@ -10,7 +10,7 @@ namespace ElevatorSimulation.Tests
         public void Passenger_Constructor_ShouldInitializeCorrectly()
         {
             // Arrange & Act
-            IPassenger passenger = new Passenger(1, 3, 7);
+            IPassenger passenger = Passenger.CreatePassenger(1, 3, 7);
 
             // Assert
             Assert.Equal(1, passenger.Id);
@@ -23,7 +23,7 @@ namespace ElevatorSimulation.Tests
         public void Passenger_ToString_ShouldReturnCorrectFormat()
         {
             // Arrange
-            IPassenger passenger = new Passenger(5, 2, 8);
+            IPassenger passenger = Passenger.CreatePassenger(5, 2, 8);
             passenger.State = PassengerState.InElevator;
 
             // Act
@@ -42,7 +42,7 @@ namespace ElevatorSimulation.Tests
         public void Passenger_State_ShouldBeSettable(PassengerState state)
         {
             // Arrange
-            IPassenger passenger = new Passenger(1, 1, 5);
+            IPassenger passenger = Passenger.CreatePassenger(1, 1, 5);
 
             // Act
             passenger.State = state;

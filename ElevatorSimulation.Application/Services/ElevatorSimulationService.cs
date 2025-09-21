@@ -18,7 +18,7 @@ namespace ElevatorSimulation.Application.Services
 
         public void InitializeSimulation(int floors, int elevators, int capacity)
         {
-            _building = new Building(floors, elevators, capacity);
+            _building = Building.CreateBuilding(floors, elevators, capacity);
             _isRunning = true;
         }
 

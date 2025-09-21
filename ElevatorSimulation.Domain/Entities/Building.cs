@@ -1,5 +1,6 @@
 using ElevatorSimulation.Domain.Interfaces;
 using ElevatorSimulation.Domain.Types;
+using System.Drawing;
 
 namespace ElevatorSimulation.Domain.Entities
 {
@@ -12,26 +13,41 @@ namespace ElevatorSimulation.Domain.Entities
         IReadOnlyList<IFloor> IBuilding.Floors => Floors.AsReadOnly();
         IReadOnlyList<IElevator> IBuilding.Elevators => Elevators.AsReadOnly();
 
-        public Building(int numberOfFloors, int numberOfElevators, int elevatorCapacity)
+        private Building(int numberOfFloors, int numberOfElevators, int elevatorCapacity)
         {
             Floors = new List<IFloor>();
             Elevators = new List<IElevator>();
 
             for (int i = 1; i <= numberOfFloors; i++)
             {
-                Floors.Add(new Floor(i));
+                Floors.Add(Floor.CreateFloor(i));
             }
 
             for (int i = 1; i <= numberOfElevators; i++)
             {
-                Elevators.Add(new Elevator(i, elevatorCapacity));
+                Elevators.Add(Elevator.CreateElevator(i, elevatorCapacity));
             }
+        }
+
+
+        public static Building CreateBuilding(int numberOfFloors, int numberOfElevators, int elevatorCapacity)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(numberOfFloors);
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(numberOfElevators);
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(elevatorCapacity);
+
+            return new Building(numberOfFloors, numberOfElevators, elevatorCapacity);
         }
 
         public void RequestElevator(int floor, int destinationFloor, int numberOfPassengers = 1)
         {
+            //ArgumentOutOfRangeException.ThrowIfGreaterThan(floor, Floors.Count);
+            //ArgumentOutOfRangeException.ThrowIfLessThan(floor, 1);
+            //ArgumentOutOfRangeException.ThrowIfGreaterThan(destinationFloor, Floors.Count);
+            //ArgumentOutOfRangeException.ThrowIfLessThan(destinationFloor, 1);
             if (floor < 1 || floor > Floors.Count || destinationFloor < 1 || destinationFloor > Floors.Count)
             {
+
                 Console.WriteLine("Invalid floor number!");
                 return;
             }
@@ -44,7 +60,7 @@ namespace ElevatorSimulation.Domain.Entities
 
             for (int i = 0; i < numberOfPassengers; i++)
             {
-                var passenger = new Passenger(passengerIdCounter++, floor, destinationFloor);
+                var passenger = Passenger.CreatePassenger(passengerIdCounter++, floor, destinationFloor);
                 Floors[floor - 1].AddPassenger(passenger);
             }
 
@@ -52,6 +68,10 @@ namespace ElevatorSimulation.Domain.Entities
             DispatchElevator(floor, requestDirection);
         }
 
+        ///<summary>
+        /// Efficient Elevator Dispatching.
+        /// Choose the elevator that is closest to the requested floor and is either stationary or moving in the direction of the request.
+        ///</summary>
         private void DispatchElevator(int floor, Direction direction)
         {
             IElevator bestElevator = null;
@@ -59,10 +79,15 @@ namespace ElevatorSimulation.Domain.Entities
 
             foreach (var elevator in Elevators)
             {
+                if (!elevator.CanAddPassenger())
+                {
+                    continue;
+                }
+
                 int distance = Math.Abs(elevator.CurrentFloor - floor);
-                
+
                 bool isGoodCandidate = elevator.Direction == Direction.Stationary ||
-                                      (elevator.Direction == direction && 
+                                      (elevator.Direction == direction &&
                                        ((direction == Direction.Up && elevator.CurrentFloor <= floor) ||
                                         (direction == Direction.Down && elevator.CurrentFloor >= floor)));
 
@@ -89,12 +114,15 @@ namespace ElevatorSimulation.Domain.Entities
 
                 if (elevator.State == ElevatorState.DoorsOpen)
                 {
+
                     HandlePassengerExchange(elevator);
-                    // After handling, close doors (state change handled internally by elevator)
                 }
             }
         }
 
+        /// <summary>
+        /// Handles passenger exchange (boarding and alighting) when the elevator doors are open.
+        /// </summary>
         private void HandlePassengerExchange(IElevator elevator)
         {
             var currentFloor = Floors[elevator.CurrentFloor - 1];
@@ -106,17 +134,35 @@ namespace ElevatorSimulation.Domain.Entities
                 Console.WriteLine($"Passenger {passenger.Id} arrived at floor {elevator.CurrentFloor}");
             }
 
-            var passengersToPickUp = currentFloor.WaitingPassengers.Where(p => 
-                elevator.CanAddPassenger() && 
+            var passengersToPickUp = currentFloor.WaitingPassengers.Where(p =>
+                elevator.CanAddPassenger() &&
                 ((p.DestinationFloor > elevator.CurrentFloor && elevator.Direction != Direction.Down) ||
                  (p.DestinationFloor < elevator.CurrentFloor && elevator.Direction != Direction.Up) ||
                  elevator.Direction == Direction.Stationary)).ToList();
 
             foreach (var passenger in passengersToPickUp)
             {
+                if (!elevator.CanAddPassenger())
+                {
+                    break;
+                }
                 elevator.AddPassenger(passenger);
                 currentFloor.RemovePassenger(passenger);
                 Console.WriteLine($"Passenger {passenger.Id} boarded elevator {elevator.Id} at floor {elevator.CurrentFloor}");
+            }
+
+            // After pickup, if there are still waiting passengers, dispatch another elevator
+            if (currentFloor.WaitingPassengers.Any())
+            {
+                if (currentFloor.WaitingPassengers.Any(p => p.DestinationFloor > currentFloor.FloorNumber))
+                {
+                    DispatchElevator(currentFloor.FloorNumber, Direction.Up);
+                }
+
+                if (currentFloor.WaitingPassengers.Any(p => p.DestinationFloor < currentFloor.FloorNumber))
+                {
+                    DispatchElevator(currentFloor.FloorNumber, Direction.Down);
+                }
             }
 
             if (!currentFloor.WaitingPassengers.Any(p => p.DestinationFloor > elevator.CurrentFloor))

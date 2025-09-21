@@ -12,13 +12,19 @@ namespace ElevatorSimulation.Domain.Entities
 
         IReadOnlyList<IPassenger> IFloor.WaitingPassengers => WaitingPassengers.AsReadOnly();
 
-        public Floor(int floorNumber)
+        Floor(int floorNumber)
         {
             FloorNumber = floorNumber;
             WaitingPassengers = new List<IPassenger>();
             UpButtonPressed = false;
             DownButtonPressed = false;
         }
+
+        public static Floor CreateFloor(int floorNumber)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(floorNumber);
+            return new Floor(floorNumber);
+        }   
 
         public void CallElevator(Direction direction)
         {
