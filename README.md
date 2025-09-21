@@ -34,8 +34,8 @@ transportation efficiently.
      - Enter destination floor (1-10)  
      - Enter number of passengers (1-8)
    - **[Q]**: Quit the simulation
-   - **[Enter]**: Continue simulation without input
-   - **[C]**: Auto-simulation without requiring [Enter] key presses
+   - **[Enter]**: Continue simulation without input. NB - Long press to increase simulation speed
+ 
 
 3. **Real-Time Display**
    - Elevator status showing current floor, direction, state, and passenger count
